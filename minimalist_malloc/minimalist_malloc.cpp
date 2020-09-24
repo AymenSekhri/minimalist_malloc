@@ -11,7 +11,7 @@ int main() {
 	custom_free(addrsss1);
 	custom_free(addrsss2);
 	addrsss1 = custom_malloc(0x145);
-	addrsss2 = custom_malloc(0x78);
+	addrsss2 = custom_malloc(0x145);
 	printf("we got address %x \n", addrsss1);
 	printf("we got address %x \n", addrsss2);
 
