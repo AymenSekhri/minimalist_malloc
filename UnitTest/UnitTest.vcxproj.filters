@@ -15,22 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="minimalist_malloc.cpp">
+    <ClCompile Include="UnitTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="malloc.cpp">
+    <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bitmap.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="malloc.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="slab_allocator.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

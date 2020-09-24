@@ -8,9 +8,18 @@ static Slab<0x060, PAGE_SIZE> slab_0x60;
 static Slab<0x100, PAGE_SIZE> slab_0x100;
 static Slab<0x200, PAGE_SIZE> slab_0x200;
 static Slab<0x500, PAGE_SIZE> slab_0x500;
-static Slab<0x1000, PAGE_SIZE> slab_variable;
 
-void* malloc(size_t size) {
+void init() {
+	slab_0x10.init();
+	slab_0x20.init();
+	slab_0x40.init();
+	slab_0x60.init();
+	slab_0x100.init();
+	slab_0x200.init();
+	slab_0x500.init();
+}
+
+void* custom_malloc(size_t size) {
 	if (size < 0x10) {
 		return slab_0x10.alloc();
 	} else if (size < 0x20) {
@@ -26,11 +35,13 @@ void* malloc(size_t size) {
 	} else if (size < 0x500) {
 		return slab_0x500.alloc();
 	} else {
-		return slab_variable.alloc();
+		assert(false);
+		return nullptr;
+		//return slab_variable.alloc();
 	}
 }
 
-void free(void* address) {
+void custom_free(void* address) {
 	slab_0x10.free(address);
 	slab_0x20.free(address);
 	slab_0x40.free(address);

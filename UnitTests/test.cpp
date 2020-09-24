@@ -1,7 +1,12 @@
 #include "pch.h"
-#include "../minimalist_malloc/"
+#include "../minimalist_malloc/malloc.h"
+#include "../minimalist_malloc/slab_allocator.h"
 
-TEST(TestCaseName, TestName) {
-  EXPECT_EQ(1, 1);
-  EXPECT_TRUE(true);
+
+
+TEST(SlubTests, TestName) {
+	static Slab<0x010, 0x200> slab;
+	slab.init();
+	EXPECT_EQ(sizeof(slab), 0x10);
+	slab.alloc();
 }
