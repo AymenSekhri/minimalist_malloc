@@ -5,3 +5,7 @@ It consists of multiple `Slab`s of different memory sizes, a `Slab` is header pl
 
 ## Why ?
 It's just for educational proposes only, and I'm using it in my [operating system](https://github.com/AymenSekhri/CyanOS).
+
+## References
+
+http://dmitrysoshnikov.com/compilers/writing-a-memory-allocator/
