@@ -64,7 +64,7 @@ for (size_t i = 0; i < num; i++) {
 | 0x90            | 140,633                      | 201,083                     | +143%        |
 
 ### Comments
-Although theses tests might not reflect the performance of a real application, but it's the closest I can think of. We can notice the Slab allocator outperforms MSVC's malloc in all memory allocation sizes for 100 allocation. Though, it struggles when we increase the allocation numbers, that's because it needs to call a system call to allocate more memory for the slab, in the other hand MSVC's malloc seems to have some kind of optimization to know ahead of time that it needs more memory and allocate it before the user request it.
+Although theses tests might not reflect the performance of a real application, but it's the closest I can think of. We can notice that the Slab allocator outperforms MSVC's malloc in all memory allocation sizes for 100 allocations. Though, it struggles when we increase the allocations number, that's because it needs to perform a system call to allocate more memory for the slab, in the other hand MSVC's malloc seems to have some kind of optimization to know ahead of time that it needs more memory and allocate it before the user request it.
 
 ## References
 
