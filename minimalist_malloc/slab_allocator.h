@@ -2,6 +2,7 @@
 #include "bitmap.h"
 #include <cstdint>
 #include <Windows.h>
+#include <iostream>
 
 const static uint32_t MAGIC = 0x8CBEEFC8;
 
@@ -15,15 +16,21 @@ template<size_t slab_size, size_t memory_size, size_t max_blocks = memory_size /
 	Bitmap<max_blocks> mem_map;
 };
 
+template<size_t size>
+struct MemoryBlock {
+	uintptr_t slab_ptr;
+	char data[size];
+};
+
 template<size_t slab_size, size_t memory_size> class Slab {
 private:
 	const static size_t MAX_HEADER_SIZE = sizeof(SlabHeader<slab_size, memory_size>);
-	const static size_t MAX_BLOCKS = (memory_size - MAX_HEADER_SIZE) / slab_size;
+	const static size_t MAX_BLOCKS = (memory_size - MAX_HEADER_SIZE) / sizeof(MemoryBlock<slab_size>);
 	static_assert(memory_size > MAX_HEADER_SIZE);
-	static_assert((slab_size + MAX_HEADER_SIZE) <= memory_size);
+	static_assert((sizeof(MemoryBlock<slab_size>) + MAX_HEADER_SIZE) <= memory_size);
 
 	SlabHeader<slab_size, memory_size, MAX_BLOCKS> header;
-	char blocks[MAX_BLOCKS][slab_size];
+	MemoryBlock<slab_size> blocks[MAX_BLOCKS];
 
 	bool is_address_in_slab(void* address);
 	void* alloc_in_current_slab(size_t block_index);
@@ -34,7 +41,7 @@ private:
 	void free_memory_to_os(void* addrss, size_t size);
 
 public:
-	
+
 
 	void init(Slab* prev = nullptr);
 	void* alloc();
@@ -43,8 +50,6 @@ public:
 
 template<size_t slab_size, size_t memory_size>
 void Slab<slab_size, memory_size>::init(Slab* prev) {
-	assert(uintptr_t(this) % memory_size == 0);
-
 	header.magic = MAGIC;
 	header.size = slab_size;
 	header.prev = prev;
@@ -58,12 +63,13 @@ template<size_t slab_size, size_t memory_size>
 void* Slab<slab_size, memory_size>::alloc() {
 	assert(header.magic == MAGIC);
 	assert(header.size == slab_size);
-	assert(uintptr_t(this) % memory_size == 0);
 
 	size_t block_index = -1;
 	if (header.free_blocks &&
 		((block_index = header.mem_map.find_unused(header.next_fit_block)) != BITMAP_NO_BITS_LEFT)) {
 		return alloc_in_current_slab(block_index);
+	} else if (header.next) {
+		return header.next->alloc();
 	} else {
 		return alloc_in_new_slab();
 	}
@@ -74,23 +80,21 @@ template<size_t slab_size, size_t memory_size>
 void Slab<slab_size, memory_size>::free(void* address) {
 	assert(header.magic == MAGIC);
 	assert(header.size == slab_size);
-	assert(uintptr_t(this) % memory_size == 0);
+	assert(is_address_in_slab(address));
 
-	if (is_address_in_slab(address) == false) {
-		return free_from_next_slab(address);
-	}
-	size_t block_index = (uintptr_t(address) - uintptr_t(blocks)) / slab_size;
+	size_t block_index = (uintptr_t(address) - uintptr_t(blocks)) / sizeof(MemoryBlock<slab_size>);
 	assert(header.mem_map.check_used(block_index));
 	free_from_current_slab(block_index);
 }
 
 template<size_t slab_size, size_t memory_size>
 bool Slab<slab_size, memory_size>::is_address_in_slab(void* address) {
-	if ((address >= blocks) && (address <= &blocks[MAX_BLOCKS - 1][slab_size - 1])) {
+	if ((address >= blocks) && (address <= &blocks[MAX_BLOCKS - 1].data[slab_size - 1])) {
 		return true;
 	} else {
 		return false;
 	}
+	return true;
 }
 
 template<size_t slab_size, size_t memory_size>
@@ -109,7 +113,8 @@ void* Slab<slab_size, memory_size>::alloc_in_current_slab(size_t block_index) {
 	header.mem_map.set_used(block_index);
 	header.next_fit_block = (block_index + 1) % MAX_BLOCKS;
 	header.free_blocks--;
-	return static_cast<void*>(blocks[block_index]);
+	blocks[block_index].slab_ptr = uintptr_t(this);
+	return static_cast<void*>(blocks[block_index].data);
 }
 
 template<size_t slab_size, size_t memory_size>
@@ -140,7 +145,12 @@ void Slab<slab_size, memory_size>::free_from_next_slab(void* address) {
 template<size_t slab_size, size_t memory_size>
 void* Slab<slab_size, memory_size>::request_memory_from_os(size_t size) {
 	//system dependent function, returns aligned memory region.
-	return VirtualAlloc(0, size, MEM_COMMIT, PAGE_READWRITE);
+	void* address = VirtualAlloc(0, size, MEM_COMMIT, PAGE_READWRITE);
+	if (!address) {
+		printf("error: 0x%X\n", GetLastError());
+		assert(false);
+	}
+	return address;
 }
 
 template<size_t slab_size, size_t memory_size>
