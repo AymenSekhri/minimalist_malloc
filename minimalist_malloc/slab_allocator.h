@@ -36,7 +36,6 @@ private:
 	void* alloc_in_current_slab(size_t block_index);
 	void* alloc_in_new_slab();
 	void free_from_current_slab(size_t block_index);
-	void free_from_next_slab(void* address);
 	void* request_memory_from_os(size_t size);
 	void free_memory_to_os(void* addrss, size_t size);
 
@@ -128,17 +127,6 @@ void Slab<slab_size, memory_size>::free_from_current_slab(size_t block_index) {
 		header.prev->header.next = nullptr;
 		free_memory_to_os(this, sizeof(Slab));
 		//The slab committed suicide, don't ever use it again!
-	}
-}
-
-template<size_t slab_size, size_t memory_size>
-void Slab<slab_size, memory_size>::free_from_next_slab(void* address) {
-	if (header.next) {//if there is another slab in the list check on it too.
-		header.next->free(address);
-		return;
-	} else {
-		//address doesn't belong any slab.
-		return;
 	}
 }
 
