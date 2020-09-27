@@ -39,7 +39,7 @@ for (size_t i = 0; i < num; i++) {
 | 0x90            | 16,109                       | 40,723                      | +253%        |
 
 ### Test 2: 600 Allocations before freeing memory
-The difference between this test and the previous one is that it does 600 memory allocations before starting freeing memory, which will test the slabs flexibility when there is no memory blocks available.<br>
+The difference between this test and the previous one is that it does 600 memory allocations before starting freeing memory, which will test the slab's flexibility when there are no memory blocks available.<br>
 The code:
 ```
 const int num = 600;
@@ -64,7 +64,7 @@ for (size_t i = 0; i < num; i++) {
 | 0x90            | 140,633                      | 201,083                     | +143%        |
 
 ### Comments
-Although theses tests might not reflect the performance of a real application, but it's closest I can think of. We can notice the Slab allocator outperform MSVC's malloc in all memory allocation size for 100 allocation. Though, it's struggles when we increase the allocation numbers, that's because it needs to call a system call to allocate more memory for the slab, in the other hand MSVC's malloc seems to have some kind of optimization to know ahead of time that it needs more memory and allocate it before the user request it.
+Although theses tests might not reflect the performance of a real application, but it's the closest I can think of. We can notice the Slab allocator outperforms MSVC's malloc in all memory allocation sizes for 100 allocation. Though, it struggles when we increase the allocation numbers, that's because it needs to call a system call to allocate more memory for the slab, in the other hand MSVC's malloc seems to have some kind of optimization to know ahead of time that it needs more memory and allocate it before the user request it.
 
 ## References
 
